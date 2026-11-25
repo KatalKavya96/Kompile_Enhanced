@@ -17,7 +17,7 @@ const sendEmail = async (options) => {
 
   try {
     const { data, error } = await resend.emails.send({
-      from: "Auth <onboarding@sarthak229.me>",
+      from: process.env.MAIL_FROM || "Auth <onboarding@sarthak229.me>",
       to: options.email,
       subject: options.subject,
       html: emailHtml,

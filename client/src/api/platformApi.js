@@ -10,11 +10,6 @@ export const syncCodeForces = async () => {
   return data;
 };
 
-export const syncGitHub = async () => {
-  const { data } = await axiosInstance.post("platforms/sync/github");
-  return data;
-};
-
 export const getUserLeetCodeStats = async (username, { cached } = {}) => {
   const url = username ? `platforms/leetcode/${username}` : "platforms/leetcode";
   const { data } = await axiosInstance.get(url, { params: { cached } });
@@ -25,18 +20,6 @@ export const getUserCodeForcesStats = async (username, { cached } = {}) => {
   const url = username
     ? `platforms/codeforces/${username}`
     : "platforms/codeforces";
-  const { data } = await axiosInstance.get(url, { params: { cached } });
-  return data;
-};
-
-export const getUserGitHubStats = async (username, { cached } = {}) => {
-  const url = username ? `platforms/github/${username}` : "platforms/github";
-  const { data } = await axiosInstance.get(url, { params: { cached } });
-  return data;
-};
-
-export const getUserGfgStats = async (username, { cached } = {}) => {
-  const url = username ? `platforms/gfg/${encodeURIComponent(username)}` : "platforms/gfg";
   const { data } = await axiosInstance.get(url, { params: { cached } });
   return data;
 };

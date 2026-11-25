@@ -2,21 +2,16 @@ import { useState, useContext, useEffect } from "react";
 import { UserContext } from "../../context/UserContext";
 import { UserCog, RefreshCw } from "lucide-react";
 import { NavLink, useParams } from "react-router-dom";
-import GfgData from "../../components/Profile/subprofiles/GfgData.jsx";
-import GithubData from "../../components/Profile/subprofiles/GithubData.jsx";
 import LeetcodeData from "../../components/Profile/subprofiles/LeetcodeData.jsx";
 import CodeforcesData from "../../components/Profile/subprofiles/Codeforces.jsx";
 import UserStats from "../../components/Profile/subprofiles/UserStats.jsx";
 import ProfileSidebar from "./ProfileSidebar";
 import { getBasicInfo } from "../../api/auth.api.js";
-import KompileCard from "../../components/Profile/subprofiles/KompileCard.jsx";
 import { toast } from "react-hot-toast";
 import {
   getAllUserStats,
   getUserLeetCodeStats,
-  getUserGitHubStats,
   getUserCodeForcesStats,
-  getUserGfgStats,
   syncAll,
 } from "../../api/platformApi.js";
 
@@ -43,11 +38,8 @@ function Profile() {
   const [activeTab, setActiveTab] = useState("userStats");
   const { user, isAuthLoading } = useContext(UserContext);
   const [isSyncing, setIsSyncing] = useState(false);
-  const [kompileCardActive, setKompileCardActive] = useState(false);
   const [leetcodeData, setLeetCodeData] = useState();
   const [codeforcesData, setCodeforcesData] = useState();
-  const [gfgData, setGfgData] = useState();
-  const [githubData, setGitHubData] = useState();
   const [allStats, setAllStats] = useState();
   const [isStatsLoading, setIsStatsLoading] = useState(true);
   const [userData, setUserData] = useState({
@@ -57,26 +49,18 @@ function Profile() {
     bio: "",
     location: "",
     university: "",
-    skills: [],
     socialLinks: {
       email: "",
-      linkedin: "",
-      twitter: "",
-      website: "",
-      resume: "",
     },
     firstName: "",
     lastName: "",
     country: "",
-    techStack: "",
     college: "",
     degree: "",
     branch: "",
     graduationYear: "",
     leetcodeUsername: "",
     codeforcesUsername: "",
-    githubUsername: "",
-    gfgUsername: "",
   });
 
   const targetUsername = username || user?.username;
@@ -87,14 +71,11 @@ function Profile() {
   const fetchAllStats = async (uname, isCurrent = () => true) => {
     setIsStatsLoading(true);
     try {
-      const [allStatsRes, leetcode, github, codeforces, gfg] =
-        await Promise.allSettled([
-          getAllUserStats(uname),
-          getUserLeetCodeStats(uname, { cached: true }),
-          getUserGitHubStats(uname, { cached: true }),
-          getUserCodeForcesStats(uname, { cached: true }),
-          getUserGfgStats(uname, { cached: true }),
-        ]);
+      const [allStatsRes, leetcode, codeforces] = await Promise.allSettled([
+        getAllUserStats(uname),
+        getUserLeetCodeStats(uname, { cached: true }),
+        getUserCodeForcesStats(uname, { cached: true }),
+      ]);
 
       if (!isCurrent()) return;
       setAllStats(
@@ -105,10 +86,6 @@ function Profile() {
       setLeetCodeData(
         leetcode.status === "fulfilled" ? leetcode.value.data.profile : null,
       );
-      setGitHubData(
-        github.status === "fulfilled" ? github.value.data.profile : null,
-      );
-      setGfgData(gfg.status === "fulfilled" ? gfg.value.data.profile : null);
       setCodeforcesData(
         codeforces.status === "fulfilled"
           ? codeforces.value.data.profile
@@ -152,18 +129,8 @@ function Profile() {
           (item) => item.platform === "codeforces",
         )?.username || "";
 
-      const githubUsername =
-        userObj.connectedPlatforms?.find((item) => item.platform === "github")
-          ?.username || "";
-
       const firstName = names[0] || "";
       const lastName = names.slice(1).join(" ");
-      const skills = Array.isArray(userObj.techStack)
-        ? userObj.techStack
-        : userObj.techStack
-            ?.split(",")
-            .map((s) => s.trim())
-            .filter(Boolean) || [];
 
       setUserData({
         name: `${firstName} ${lastName}`.trim() || userObj.username || "User",
@@ -172,18 +139,12 @@ function Profile() {
         bio: userObj.bio || "",
         location: userObj.country || "Not set",
         university: userObj.education?.institution || "Not set",
-        skills,
         socialLinks: {
           email: userObj.email || "",
-          linkedin: userObj.socialLinks?.linkedin || "",
-          twitter: userObj.socialLinks?.twitter || "",
-          website: userObj.socialLinks?.website || "",
-          resume: userObj.socialLinks?.resume || "",
         },
         firstName,
         lastName,
         country: userObj.country || "",
-        techStack: skills.join(", "),
         college: userObj.education?.institution || "",
         degree: userObj.education?.degree || "",
         branch: userObj.education?.branch || "",
@@ -191,8 +152,6 @@ function Profile() {
         connectedPlatforms: userObj.connectedPlatforms || [],
         leetcodeUsername,
         codeforcesUsername,
-        githubUsername,
-        gfgUsername: userObj.connectedPlatforms?.find((item) => item.platform === "gfg")?.username || "",
       });
     } catch (error) {
       if (isCurrent()) toast.error(error.response?.data?.message || "Failed to fetch user data");
@@ -239,17 +198,11 @@ function Profile() {
         {/* left */}
         <ProfileSidebar
           userData={userData}
-          kompileCardActive={kompileCardActive}
-          setKompileCardActive={setKompileCardActive}
           isOwner={isOwner}
         />
 
         {/* right */}
-        {kompileCardActive ? (
-          <div className="flex-1 min-w-0 w-full">
-            <KompileCard allStats={allStats} userData={userData} />
-          </div>
-        ) : (
+        {(
           <div className="flex-1 min-w-0 w-full bg-[#141414] rounded-2xl h-full border border-white/[0.08] p-6 text-white flex flex-col shadow-xl">
             <div className="flex justify-between items-center mb-4 max-sm:flex-wrap max-sm:gap-2">
               <div>
@@ -308,26 +261,6 @@ function Profile() {
               >
                 Codeforces
               </button>
-              <button
-                onClick={() => setActiveTab("gfg")}
-                className={`px-5 py-2 text-sm font-medium transition-all duration-200 border-b-2 -mb-px ${
-                  activeTab === "gfg"
-                    ? "border-[#f89f1b] text-[#f89f1b]"
-                    : "border-transparent text-[#888] hover:text-white"
-                }`}
-              >
-                GeeksforGeeks
-              </button>
-              <button
-                onClick={() => setActiveTab("github")}
-                className={`px-5 py-2 text-sm font-medium transition-all duration-200 border-b-2 -mb-px ${
-                  activeTab === "github"
-                    ? "border-[#f89f1b] text-[#f89f1b]"
-                    : "border-transparent text-[#888] hover:text-white"
-                }`}
-              >
-                GitHub
-              </button>
             </div>
 
             <div className="flex-1">
@@ -341,12 +274,9 @@ function Profile() {
                     <UserStats
                       isOwner={isOwner}
                       allStats={allStats}
-                      techStack={userData.skills}
                       noPlatformsLinked={
                         !userData.leetcodeUsername &&
-                        !userData.codeforcesUsername &&
-                        !userData.gfgUsername &&
-                        !userData.githubUsername
+                        !userData.codeforcesUsername
                       }
                     />
                   )}
@@ -362,20 +292,6 @@ function Profile() {
                       isOwner={isOwner}
                       CodeforcesData={codeforcesData}
                       userName={userData.codeforcesUsername}
-                    />
-                  )}
-                  {activeTab === "gfg" && (
-                    <GfgData
-                      isOwner={isOwner}
-                      profile={gfgData}
-                      username={userData.gfgUsername}
-                    />
-                  )}
-                  {activeTab === "github" && (
-                    <GithubData
-                      isOwner={isOwner}
-                      githubData={githubData}
-                      userName={userData.githubUsername}
                     />
                   )}
                 </>

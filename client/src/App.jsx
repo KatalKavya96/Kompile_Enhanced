@@ -1,34 +1,41 @@
 import { Routes, Route, Navigate, useParams } from "react-router-dom";
-import { useContext } from "react";
+import { lazy, Suspense, useContext } from "react";
 import { Toaster } from "react-hot-toast";
 import { useTodayContestToasts } from "./components/hooks/useTodayContestToasts.jsx";
 import { UserContext } from "./context/UserContext.jsx";
-import Home from "./pages/app/Home.jsx";
-import LandingPage from "./pages/LandingPage/LandingPage.jsx";
-import Login from "./pages/auth/Login.jsx";
-import Register from "./pages/auth/Register.jsx";
-import EmailVerification from "./pages/auth/EmailVerification.jsx";
-import Forgotpassword from "./pages/auth/Forgotpassword.jsx";
-import OAuthSuccess from "./pages/auth/OAuthSuccess.jsx";
-import Profile from "./pages/profile/Profile.jsx";
-import CompanyWiseKit from "./pages/CompanyWiseKit/CompanyWiseKit.jsx";
-import CompanyDashboard from "./pages/CompanyWiseKit/CompanyDashboard.jsx";
-import Contest from "./pages/event/Contest.jsx";
-import Workspace from "./pages/Workspace/Workspace.jsx";
-import WorkspaceHome from "./pages/Workspace/WorkspaceHome.jsx";
-import WorkspaceCompanyKit from "./pages/Workspace/WorkspaceCompanyKit.jsx";
-import { CompanySheets } from "./components/CompanyWiseKit/CompanySheets.jsx";
-import UserData from "./components/Profile/UserData.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
-import Mysheets from "./components/workspace/mysheets/Mysheets.jsx";
-import LoveBabbarSheet from "./components/workspace/sheetsDash/LoveBabbarSheet.jsx";
-import PracticeSheet from "./components/workspace/sheetsDash/PracticeSheet.jsx";
-import StriversA2ZSheet from "./components/workspace/sheetsDash/StriversA2ZSheet.jsx";
-import LoveBabbartopic from "./components/workspace/sheetsDash/LoveBabbartopic.jsx";
-import Community from "./components/workspace/community/Community.jsx";
-import Room from "./components/workspace/room/Room.jsx";
-import RoomSpace from "./components/workspace/room/RoomSpace.jsx";
-import Bookmarks from "./components/workspace/Bookmarks.jsx";
+
+// Every page is its own chunk, so a visitor downloads only the code for the
+// page they open. The workspace shell stays small and pages stream in.
+const Home = lazy(() => import("./pages/app/Home.jsx"));
+const LandingPage = lazy(() => import("./pages/LandingPage/LandingPage.jsx"));
+const Login = lazy(() => import("./pages/auth/Login.jsx"));
+const Register = lazy(() => import("./pages/auth/Register.jsx"));
+const EmailVerification = lazy(() => import("./pages/auth/EmailVerification.jsx"));
+const Forgotpassword = lazy(() => import("./pages/auth/Forgotpassword.jsx"));
+const OAuthSuccess = lazy(() => import("./pages/auth/OAuthSuccess.jsx"));
+const Profile = lazy(() => import("./pages/profile/Profile.jsx"));
+const CompanyDashboard = lazy(() => import("./pages/CompanyWiseKit/CompanyDashboard.jsx"));
+const Contest = lazy(() => import("./pages/event/Contest.jsx"));
+const Workspace = lazy(() => import("./pages/Workspace/Workspace.jsx"));
+const WorkspaceHome = lazy(() => import("./pages/Workspace/WorkspaceHome.jsx"));
+const WorkspaceCompanyKit = lazy(() => import("./pages/Workspace/WorkspaceCompanyKit.jsx"));
+const UserData = lazy(() => import("./components/Profile/UserData.jsx"));
+const Mysheets = lazy(() => import("./components/workspace/mysheets/Mysheets.jsx"));
+const LoveBabbarSheet = lazy(() => import("./components/workspace/sheetsDash/LoveBabbarSheet.jsx"));
+const PracticeSheet = lazy(() => import("./components/workspace/sheetsDash/PracticeSheet.jsx"));
+const StriversA2ZSheet = lazy(() => import("./components/workspace/sheetsDash/StriversA2ZSheet.jsx"));
+const LoveBabbartopic = lazy(() => import("./components/workspace/sheetsDash/LoveBabbartopic.jsx"));
+const Community = lazy(() => import("./components/workspace/community/Community.jsx"));
+const Room = lazy(() => import("./components/workspace/room/Room.jsx"));
+const RoomSpace = lazy(() => import("./components/workspace/room/RoomSpace.jsx"));
+const Bookmarks = lazy(() => import("./components/workspace/Bookmarks.jsx"));
+
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-black">
+    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-orange-500" />
+  </div>
+);
 
 const ProtectedRoute = ({ children }) => {
   const { user, isAuthLoading } = useContext(UserContext);
@@ -101,10 +108,11 @@ function App() {
         }}
       />
       <ScrollToTop />
+      <Suspense fallback={<PageLoader />}>
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/dashboard" element={<Home />} />
-        <Route path="/company" element={<CompanyWiseKit />} />
+        <Route path="/company" element={<Navigate to="/workspace/company-kit" replace />} />
         <Route
           path="/company/:companySlug"
           element={
@@ -205,6 +213,7 @@ function App() {
           <Route path="bookmarks" element={<Bookmarks />} />
         </Route>
       </Routes>
+      </Suspense>
     </>
   );
 }

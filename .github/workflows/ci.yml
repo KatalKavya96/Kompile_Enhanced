@@ -33,3 +33,10 @@ jobs:
         working-directory: server
       - run: node --check src/index.js
         working-directory: server
+      - name: Cache MongoDB test binary
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/mongodb-binaries
+          key: mongodb-binaries-${{ runner.os }}-${{ hashFiles('server/package-lock.json') }}
+      - run: npm test
+        working-directory: server

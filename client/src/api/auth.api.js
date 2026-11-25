@@ -6,7 +6,6 @@ export const registerUser = async ({
   password,
   confirmPassword,
   leetcodeUsername = "",
-  githubUsername = "",
 }) => {
   const { data } = await axiosInstance.post("/auth/register", {
     username,
@@ -14,7 +13,6 @@ export const registerUser = async ({
     password,
     confirmPassword,
     leetcodeUsername,
-    githubUsername,
   });
   return data;
 };
@@ -88,30 +86,24 @@ export const updateBasicInfo = async ({
   lastName,
   bio,
   country,
-  techStack,
   college,
   degree,
   branch,
   graduationYear,
   leetcodeusername,
   codeforcesusername,
-  githubusername,
-  gfgusername,
 }) => {
   const { data } = await axiosInstance.put("/users/update-basic-info", {
     firstName,
     lastName,
     bio,
     country,
-    techStack,
     college,
     degree,
     branch,
     graduationYear,
     leetcodeUsername: leetcodeusername,
     codeforcesUsername: codeforcesusername,
-    githubUsername: githubusername,
-    gfgUsername: gfgusername,
   });
   return data;
 };

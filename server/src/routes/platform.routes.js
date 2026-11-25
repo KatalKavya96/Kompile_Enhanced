@@ -1,10 +1,9 @@
 import { Router } from "express";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { syncLimiter, cacheFor } from "../middlewares/security.middleware.js";
 import {
-  syncGithubProfile,
   syncLeetcodeProfile,
   syncCodeforcesProfile,
-  syncGfgProfile,
   syncAllProfiles,
   getUserStats,
   getSpecificPlatformData,
@@ -12,16 +11,14 @@ import {
 
 const router = Router();
 
-router.route("/sync/github").post(verifyJWT, syncGithubProfile);
-router.route("/sync/leetcode").post(verifyJWT, syncLeetcodeProfile);
-router.route("/sync/codeforces").post(verifyJWT, syncCodeforcesProfile);
-router.route("/sync/gfg").post(verifyJWT, syncGfgProfile);
-router.route("/sync/all").post(verifyJWT, syncAllProfiles);
+router.route("/sync/leetcode").post(verifyJWT, syncLimiter, syncLeetcodeProfile);
+router.route("/sync/codeforces").post(verifyJWT, syncLimiter, syncCodeforcesProfile);
+router.route("/sync/all").post(verifyJWT, syncLimiter, syncAllProfiles);
 
 router.route("/stats").get(verifyJWT, getUserStats);
-router.route("/stats/:username").get(getUserStats);
+router.route("/stats/:username").get(cacheFor(60), getUserStats);
 
 router.route("/:platform").get(verifyJWT, getSpecificPlatformData);
-router.route("/:platform/:username").get(getSpecificPlatformData);
+router.route("/:platform/:username").get(cacheFor(60), getSpecificPlatformData);
 
 export default router;

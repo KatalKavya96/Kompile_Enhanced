@@ -1,6 +1,7 @@
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { User } from "../models/user.models.js";
+import { isAllowedEmail } from "../utils/email-domain.js";
 
 passport.use(
   new GoogleStrategy(
@@ -14,6 +15,10 @@ passport.use(
         const email = profile.emails?.[0]?.value;
         if (!email) {
           return done(new Error("No email returned from Google"), null);
+        }
+        if (profile.emails?.[0]?.verified === false || !isAllowedEmail(email)) {
+          // Not a verified university address: fail the login (redirects to failureRedirect).
+          return done(null, false);
         }
 
        
