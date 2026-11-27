@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Edit, MapPin, GraduationCap, Lock, Unlock } from "lucide-react";
+import { Edit, MapPin, GraduationCap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const getInitials = (nameOrUsername) => {
@@ -16,8 +16,6 @@ const getInitials = (nameOrUsername) => {
 
 function ProfileSidebar({
   userData,
-  kompileCardActive,
-  setKompileCardActive,
   isOwner,
 }) {
   const navigate = useNavigate();
@@ -65,18 +63,6 @@ function ProfileSidebar({
         <h1 className="text-3xl font-bold mb-3 text-center tracking-tight">
           {userData.name}
         </h1>
-
-        <button
-          onClick={() => setKompileCardActive((prev) => !prev)}
-          className={`w-full flex items-center justify-center gap-2 border border-white/[0.08] font-semibold py-3 rounded-xl transition-all cursor-pointer text-base shadow-md ${
-            kompileCardActive
-              ? "bg-[#f89f1b] text-black hover:bg-[#e08e10]"
-              : "bg-[#1c1c1c] hover:bg-[#252525] text-[#f89f1b]"
-          }`}
-        >
-          Kompile Card
-          {kompileCardActive ? <Unlock size={18} /> : <Lock size={18} />}
-        </button>
       </div>
 
       {/* Social Links */}

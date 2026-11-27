@@ -15,7 +15,11 @@ const userRegisterValidator = () => {
       .withMessage("username is required")
       .isLength({ min: 3 })
       .withMessage("Username must be at least 3 characters long"),
-    body("password").trim().notEmpty().withMessage("Password is required"),
+    body("password")
+      .notEmpty()
+      .withMessage("Password is required")
+      .isLength({ min: 8, max: 128 })
+      .withMessage("Password must be 8 to 128 characters"),
     body("confirmPassword")
       .trim()
       .notEmpty()
@@ -62,7 +66,6 @@ const userUpdateBasicInfoValidator = () => {
       .isLength({ max: 200 })
       .withMessage("Bio cannot exceed 200 characters"),
     body("country").optional({ checkFalsy: true }).trim(),
-    body("techStack").optional({ checkFalsy: true }),
     body("college").optional({ checkFalsy: true }).trim(),
     body("degree").optional({ checkFalsy: true }).trim(),
     body("branch").optional({ checkFalsy: true }).trim(),

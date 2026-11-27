@@ -1,12 +1,8 @@
-import { fetchGfgRawData } from "../services/gfg.service.js";
-import { transformGfgResponse } from "../transformers/gfg.transformer.js";
 import { asyncHandler } from "../utils/async-handler.js";
 import { ApiResponse } from "../utils/api-response.js";
 import { ApiError } from "../utils/api-error.js";
 import { User } from "../models/user.models.js";
 import { PlatformProfile } from "../models/user.models.js";
-import { fetchGithubRawData } from "../services/github.service.js";
-import { transformGithubResponse } from "../transformers/github.transformer.js";
 import { fetchCodeforcesData } from "../services/codeforces.service.js";
 import { fetchLeetcodeRawData } from "../services/leetcode.service.js";
 import { transformLeetcodeResponse } from "../transformers/leetcode.transformer.js";
@@ -55,28 +51,6 @@ const syncPlatform = async ({
   );
 };
 
-export const syncGithubProfile = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user._id);
-  if (!user) throw new ApiError(404, "User not found");
-
-  const githubUsername = getPlatformUsername(user, "github");
-  if (!githubUsername) {
-    throw new ApiError(400, "No GitHub username connected for this user");
-  }
-
-  const profile = await syncPlatform({
-    userId: user._id,
-    platform: "github",
-    username: githubUsername,
-    fetchRaw: fetchGithubRawData,
-    transform: transformGithubResponse,
-  });
-  await recomputeUserStats(user._id);
-  return res
-    .status(200)
-    .json(new ApiResponse(200, profile, "GitHub profile synced"));
-});
-
 export const syncLeetcodeProfile = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
   if (!user) throw new ApiError(404, "User not found");
@@ -121,33 +95,14 @@ export const syncCodeforcesProfile = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, profile, "Codeforces profile synced"));
 });
 
-export const syncGfgProfile = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user._id);
-  if (!user) throw new ApiError(404, "User not found");
-
-  const username = getPlatformUsername(user, "gfg");
-  if (!username) throw new ApiError(400, "No GeeksforGeeks username connected for this user");
-
-  const profile = await syncPlatform({
-    userId: user._id,
-    platform: "gfg",
-    username,
-    ...platforms.gfg,
-  });
-  await recomputeUserStats(user._id);
-  return res.status(200).json(new ApiResponse(200, profile, "GeeksforGeeks profile synced"));
-});
-
 const platforms = {
-  gfg: { fetchRaw: fetchGfgRawData, transform: transformGfgResponse },
   leetcode: { fetchRaw: fetchLeetcodeRawData, transform: transformLeetcodeResponse },
   codeforces: { fetchRaw: fetchCodeforcesData, transform: transformCodeforcesResponse },
-  github: { fetchRaw: fetchGithubRawData, transform: transformGithubResponse },
 };
 
 const activeSyncs = new Map();
 const noSyncNeeded = { attempted: 0, failed: 0, failedPlatforms: [] };
-const platformNames = { gfg: "GeeksforGeeks", leetcode: "LeetCode", codeforces: "Codeforces", github: "GitHub" };
+const platformNames = { leetcode: "LeetCode", codeforces: "Codeforces" };
 
 async function syncConnectedProfiles(user, calendar) {
   const connected = Object.entries(platforms).flatMap(([platform, config]) => {
@@ -294,12 +249,17 @@ export const getSpecificPlatformData = asyncHandler(async (req, res) => {
     platform,
   });
 
+  // Only the signed-in owner may trigger a live sync. Public profile views read
+  // stored data, so anonymous traffic can never make the server call LeetCode.
+  const isOwner = req.user?._id && String(req.user._id) === String(user._id);
+
   if (
+    isOwner &&
     req.query.cached !== "true" &&
     (!profile ||
       profile.syncStatus !== "success" ||
       profile.handle !== platformUsername ||
-      (platform !== "gfg" && !profile.stats?.activeDays))
+      !profile.stats?.activeDays)
   ) {
     const config = platforms[platform];
     if (config) {

@@ -2,11 +2,10 @@ import { PlatformProfile } from "../models/user.models.js";
 import { User } from "../models/user.models.js";
 
 export const recomputeUserStats = async (userId) => {
-  const [profiles, user] = await Promise.all([
-    PlatformProfile.find({ userId }).lean(),
-    User.findById(userId).select("connectedPlatforms").lean(),
-  ]);
-  const gfgHandle = user?.connectedPlatforms?.find(({ platform }) => platform === "gfg")?.username?.trim();
+  const profiles = await PlatformProfile.find({
+    userId,
+    platform: { $in: ["leetcode", "codeforces"] },
+  }).lean();
 
   const combined = {
     totalQuestions: 0,
@@ -24,7 +23,6 @@ export const recomputeUserStats = async (userId) => {
   const languageMap = new Map();
 
   for (const profile of profiles) {
-    if (profile.platform === "gfg" && profile.handle !== gfgHandle) continue;
     const s = profile.stats || {};
 
     combined.totalQuestions += s.totalQuestions || 0;

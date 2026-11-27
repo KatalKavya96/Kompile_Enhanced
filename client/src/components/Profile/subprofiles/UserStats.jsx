@@ -4,7 +4,7 @@ import DonutChart from "./../DonutChart.jsx";
 import HeatmapComponent from "./../HeatmapComponent.jsx";
 import DSATopicChart from "./../DSATopicChart.jsx";
 
-function UserStats({ allStats, techStack, showTopicAnalysis = true, noPlatformsLinked = false, isOwner = false }) {
+function UserStats({ allStats, showTopicAnalysis = true, noPlatformsLinked = false, isOwner = false }) {
   return (
     <>
       <div className="flex flex-col gap-3">
@@ -68,33 +68,6 @@ function UserStats({ allStats, techStack, showTopicAnalysis = true, noPlatformsL
               <h1 className="text-4xl font-bold mt-1">
                 {allStats?.totalActiveDays ?? "-"}
               </h1>
-            </div>
-          </div>
-
-          <div className="bg-black rounded-xl border border-[#2e2e2e] p-3 text-white flex flex-col">
-            <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wide mb-3 shrink-0">
-              My Skills
-            </h2>
-            <div
-              className="flex flex-wrap gap-1.5 overflow-y-auto pr-1"
-              style={{
-                maxHeight: "160px",
-                scrollbarWidth: "thin",
-                scrollbarColor: "#3f3f3f transparent",
-              }}
-            >
-              {techStack && techStack.length > 0 ? (
-                techStack.map((skill) => (
-                  <span
-                    key={skill}
-                    className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-[#f89f1b]/10 text-[#f89f1b] border border-[#f89f1b]/25 shrink-0"
-                  >
-                    {skill}
-                  </span>
-                ))
-              ) : (
-                <span className="text-zinc-500 text-sm">No data</span>
-              )}
             </div>
           </div>
 

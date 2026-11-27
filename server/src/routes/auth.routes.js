@@ -12,7 +12,6 @@ import {
   resendEmailVerification,
   resetForgotPassword,
   verifyEmail,
-  getLoginHistory,
 } from "../controllers/auth.controller.js";
 import { validate } from "../middlewares/validator.middleware.js";
 import {
@@ -24,15 +23,17 @@ import {
 } from "../validators/index.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
+import { authLimiter } from "../middlewares/security.middleware.js";
+
 let router = Router();
 
 // Public routes
-router.route("/register").post(userRegisterValidator(), validate, registerUser);
-router.route("/login").post(userLoginValidator(), validate, login);
+router.route("/register").post(authLimiter, userRegisterValidator(), validate, registerUser);
+router.route("/login").post(authLimiter, userLoginValidator(), validate, login);
 
 router.route("/verify-email/:verificationToken").get(verifyEmail);
 router.route("/refresh-token").post(refreshAccessToken);
-router.route("/resend-email-verification").post(resendEmailVerification);
+router.route("/resend-email-verification").post(authLimiter, resendEmailVerification);
 
 // Google OAuth — session:false because the app uses stateless JWT cookies
 router.route("/google").get(
@@ -50,10 +51,10 @@ router.route("/google/callback").get(
 );
 router
   .route("/forgot-password")
-  .post(userForgotPasswordValidator(), validate, forgotPasswordRequest);
+  .post(authLimiter, userForgotPasswordValidator(), validate, forgotPasswordRequest);
 router
   .route("/reset-password/:resetToken")
-  .post(userResetForgotPasswordValidator(), validate, resetForgotPassword);
+  .post(authLimiter, userResetForgotPasswordValidator(), validate, resetForgotPassword);
 
 //secure routes
 router.route("/logout").post(verifyJWT, logoutUser);
@@ -67,6 +68,5 @@ router
     changeCurrentPassword,
   );
 
-router.route("/me/login-history").get(verifyJWT, getLoginHistory);
 
 export default router;

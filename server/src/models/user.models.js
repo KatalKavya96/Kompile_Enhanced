@@ -40,6 +40,11 @@ const userSchema = new Schema(
         return this.authProvider === "local";
       },
     },
+    role: {
+      type: String,
+      enum: ["student", "admin"],
+      default: "student",
+    },
     authProvider: {
       type: String,
       enum: ["local", "google"],
@@ -78,30 +83,18 @@ const userSchema = new Schema(
       type: String,
       trim: true,
     },
-    techStack: [
-      {
-        type: String,
-        trim: true,
-      },
-    ],
     education: {
       institution: { type: String, trim: true },
       degree: { type: String, trim: true },
       branch: { type: String, trim: true },
       graduationYear: { type: Number },
     },
-    socialLinks: {
-      linkedin: { type: String, trim: true },
-      twitter: { type: String, trim: true },
-      website: { type: String, trim: true },
-      resume: { type: String, trim: true },
-    },
     // platform data
     connectedPlatforms: [
       {
         platform: {
           type: String,
-          enum: ["leetcode", "github", "codeforces", "hackerrank", "gfg"],
+          enum: ["leetcode", "codeforces"],
           required: true,
         },
         username: { type: String, trim: true, required: true },
@@ -207,7 +200,7 @@ const platformProfileSchema = new Schema(
     handle: { type: String, required: true, trim: true },
     platform: {
       type: String,
-      enum: ["leetcode", "codeforces", "github", "gfg"],
+      enum: ["leetcode", "codeforces"],
       required: true,
     },
     profileUrl: {
@@ -228,21 +221,6 @@ const platformProfileSchema = new Schema(
       hardSolved: { type: Number, default: 0 },
 
       activeDays: { type: Number, default: 0 },
-
-      // GeeksforGeeks
-      codingScore: Number,
-      monthlyScore: Number,
-      basicSolved: Number,
-      schoolSolved: Number,
-
-      // github
-      totalContributions: { type: Number, default: 0 },
-      maxStreak: { type: Number, default: 0 },
-      currentStreak: { type: Number, default: 0 },
-      stars: { type: Number, default: 0 },
-      commits: { type: Number, default: 0 },
-      prs: { type: Number, default: 0 },
-      issues: { type: Number, default: 0 },
     },
     languages: [
       {

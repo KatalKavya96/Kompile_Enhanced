@@ -13,10 +13,7 @@ import { toast } from "react-hot-toast";
 const getPlatformKey = (platformName) => {
   const map = {
     leetcode: "leetcode",
-    geeksforgeeks: "gfg",
     codeforces: "codeforces",
-    hackerrank: "hackerrank",
-    github: "github",
   };
   return map[platformName.toLowerCase()] || platformName.toLowerCase();
 };
@@ -30,7 +27,6 @@ function UserData() {
     lastName: "",
     bio: "",
     country: "",
-    techStack: "",
     college: "",
     degree: "",
     branch: "",
@@ -53,12 +49,6 @@ function UserData() {
       name: "LeetCode",
       logo: "/assets/platformLogos/leetcode-logo.png",
       link: "https://leetcode.com/u/",
-      placeholder: "johndoe",
-    },
-    {
-      name: "GeeksforGeeks",
-      logo: "/assets/platformLogos/GeeksForGeeks.png",
-      link: "https://www.geeksforgeeks.org/user/",
       placeholder: "johndoe",
     },
     // {
@@ -85,12 +75,6 @@ function UserData() {
     //   link: "https://atcoder.jp/users/",
     //   placeholder: "johndoe",
     // },
-    {
-      name: "GitHub",
-      logo: "/assets/platformLogos/github-logo.png",
-      link: "https://github.com/",
-      placeholder: "johndoe",
-    },
   ];
 
   const fetchBasicInfo = async () => {
@@ -109,24 +93,17 @@ function UserData() {
         user.connectedPlatforms?.find((item) => item.platform === "codeforces")
           ?.username || "";
 
-      const githubUsername =
-        user.connectedPlatforms?.find((item) => item.platform === "github")
-          ?.username || "";
-
       setFormData({
         firstName: names[0] || "",
         lastName: names.slice(1).join(" "),
         bio: user.bio || "",
         country: user.country || "",
-        techStack: user.techStack?.join(", ") || "",
         college: user.education?.institution || "",
         degree: user.education?.degree || "",
         branch: user.education?.branch || "",
         graduationYear: user.education?.graduationYear || "",
         leetcodeusername: leetcodeUsername,
         codeforcesusername: codeforcesUsername,
-        githubusername: githubUsername,
-        gfgusername: user.connectedPlatforms?.find((item) => item.platform === "gfg")?.username || "",
       });
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to fetch user data");
@@ -148,9 +125,6 @@ function UserData() {
         fullname: response.data.user.fullname,
         bio: response.data.user.bio,
         country: response.data.user.country,
-        techStack: Array.isArray(response.data.user.techStack)
-          ? response.data.user.techStack.join(", ")
-          : response.data.user.techStack || "",
         education: response.data.user.education,
         connectedPlatforms: response.data.user.connectedPlatforms,
       }));

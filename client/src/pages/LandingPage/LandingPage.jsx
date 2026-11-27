@@ -1,16 +1,13 @@
 import Navbar from "../../components/Navbar";
 import GridComponent from "../../components/GridComponent";
 import { Footer } from "../../components/CompanyWiseKit/Footer";
-import { MacbookScroll } from "@/components/ui/macbook-scroll";
 import codolioPlatformsImg from "../../../Assets/landingPage/codolio-platforms.png";
-import githubStatsHubImg from "../../../Assets/landingPage/feature1 (7).png";
 import visibilityImg from "../../../Assets/landingPage/visibility.png";
 import { CompanySheets } from "../../components/CompanyWiseKit/CompanySheets";
 import { useNavigate } from "react-router-dom";
 import { useContext } from "react";
 import { UserContext } from "../../context/UserContext.jsx";
 import PoweredByChip from "../../components/chipanimation/PoweredByChip.jsx";
-import LandingUserStats from "../../components/LandingPage/LandingUserStats.jsx";
 import SimplifyPrepSection from "../../components/LandingPage/SimplifyPrepSection.jsx";
 
 export default function LandingPage() {
@@ -130,14 +127,7 @@ export default function LandingPage() {
         </div>
 
         <SimplifyPrepSection />
-        <div className="max-sm:hidden w-full overflow-hidden pt-48 bg-black">
-          <MacbookScroll
-            title={<span></span>}
-            src="/assets/landingPage/WorkSpace.png"
-            showGradient={false}
-          />
-        </div>
-        <div className="px-4 pt-6 sm:hidden">
+        <div className="px-4 pt-24 max-w-5xl mx-auto">
           <img src="/assets/landingPage/WorkSpace.png" alt="Kompile workspace" loading="lazy" className="w-full rounded-xl" />
         </div>
         <section className="bg-transparent text-white px-6 py-24">
@@ -156,31 +146,6 @@ export default function LandingPage() {
               </button>
             </div>
 
-            <LandingUserStats />
-          </div>
-        </section>
-        <section className=" text-white px-6 py-24 w-full bg-black">
-          <div className="max-w-7xl mx-auto">
-            <div className="mb-12">
-              <h2 className="text-4xl md:text-5xl font-bold mb-3 tracking-tight">
-                Hub for your{" "}
-                <span className="text-orange-500">Projects and Dev</span> Stats
-              </h2>
-              <a
-                href="#"
-                className="text-blue-500 hover:underline font-semibold flex items-center gap-1"
-              >
-                Try GitHub Tracker →
-              </a>
-            </div>
-
-            <div className="flex justify-center">
-              <img
-                src={githubStatsHubImg}
-                alt="github-stats-hub"
-                className="w-full max-w-5xl max-h-[400px] rounded-2xl object-contain"
-              />
-            </div>
           </div>
         </section>
         <section className="bg-transparent text-white px-6 py-24">

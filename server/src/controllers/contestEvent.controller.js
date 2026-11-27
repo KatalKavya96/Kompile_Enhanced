@@ -29,13 +29,6 @@ export const getContestEvents = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, events, "Contest events fetched"));
 });
 
-export const syncContestEvents = asyncHandler(async (req, res) => {
-  const count = await fetchAndStoreContests();
-  return res
-    .status(200)
-    .json(new ApiResponse(200, { upserted: count }, "Contest sync complete"));
-});
-
 export const getTodayContests = asyncHandler(async (req, res) => {
   const now = new Date();
   const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -57,4 +50,11 @@ export const getTodayContests = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(new ApiResponse(200, events, "Today's contests fetched"));
+});
+
+export const syncContestEvents = asyncHandler(async (req, res) => {
+  const count = await fetchAndStoreContests();
+  return res
+    .status(200)
+    .json(new ApiResponse(200, { upserted: count }, "Contest sync complete"));
 });

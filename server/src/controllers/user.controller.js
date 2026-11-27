@@ -1,7 +1,6 @@
 import { asyncHandler } from "../utils/async-handler.js";
 import { ApiResponse } from "../utils/api-response.js";
 import { ApiError } from "../utils/api-error.js";
-import { recomputeUserStats } from "../services/userStats.service.js";
 import { User } from "../models/user.models.js";
 
 const updateBasicInfo = asyncHandler(async (req, res) => {
@@ -10,7 +9,6 @@ const updateBasicInfo = asyncHandler(async (req, res) => {
     lastName,
     bio,
     country,
-    techStack,
     college,
     degree,
     branch,
@@ -19,9 +17,6 @@ const updateBasicInfo = asyncHandler(async (req, res) => {
     leetcodeusername,
     codeforcesUsername,
     codeforcesusername,
-    githubUsername,
-    githubusername,
-    gfgUsername,
   } = req.body;
 
   const user = await User.findById(req.user._id);
@@ -33,16 +28,6 @@ const updateBasicInfo = asyncHandler(async (req, res) => {
   if (bio !== undefined) user.bio = bio;
   if (country !== undefined) user.country = country;
 
-  if (techStack !== undefined) {
-    if (typeof techStack === "string") {
-      user.techStack = techStack
-        .split(",")
-        .map((t) => t.trim())
-        .filter(Boolean);
-    } else if (Array.isArray(techStack)) {
-      user.techStack = techStack;
-    }
-  }
   //education
   if (!user.education) user.education = {};
   if (college !== undefined) user.education.institution = college;
@@ -59,36 +44,27 @@ const updateBasicInfo = asyncHandler(async (req, res) => {
     leetcodeUsername !== undefined ? leetcodeUsername : leetcodeusername;
   const finalCodeforces =
     codeforcesUsername !== undefined ? codeforcesUsername : codeforcesusername;
-  const finalGithub =
-    githubUsername !== undefined ? githubUsername : githubusername;
-
-  if (gfgUsername !== undefined && typeof gfgUsername !== "string") {
-    throw new ApiError(400, "GeeksforGeeks username must be a string");
-  }
-  const currentGfgHandle = user.connectedPlatforms.find(({ platform }) => platform === "gfg")?.username ?? "";
-  const nextGfgHandle = gfgUsername?.trim();
-  const gfgChanged = nextGfgHandle !== undefined && nextGfgHandle !== currentGfgHandle;
 
   const platformUpdates = [
-    { key: "gfg", username: nextGfgHandle },
     { key: "leetcode", username: finalLeetcode },
     { key: "codeforces", username: finalCodeforces },
-    { key: "github", username: finalGithub },
   ];
 
   for (const { key, username } of platformUpdates) {
-    if (username !== undefined) {
-      const existing = user.connectedPlatforms.find((p) => p.platform === key);
-      if (existing) {
-        existing.username = username;
-      } else if (username) {
-        user.connectedPlatforms.push({ platform: key, username });
-      }
+    if (username === undefined) continue;
+    if (typeof username !== "string") {
+      throw new ApiError(400, `${key} username must be a string`);
+    }
+    const handle = username.trim();
+    const existing = user.connectedPlatforms.find((p) => p.platform === key);
+    if (existing) {
+      existing.username = handle;
+    } else if (handle) {
+      user.connectedPlatforms.push({ platform: key, username: handle });
     }
   }
 
   await user.save({ validateBeforeSave: false });
-  if (gfgChanged) await recomputeUserStats(user._id);
 
   const updatedUser = await User.findById(user._id).select(
     "-password -refreshToken -emailVerificationToken -emailVerificationExpiry -forgotPasswordToken -forgotPasswordExpiry",

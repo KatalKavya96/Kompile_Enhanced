@@ -1,8 +1,8 @@
 import { asyncHandler } from "../utils/async-handler.js";
+import { isAllowedEmail } from "../utils/email-domain.js";
 import { ApiResponse } from "../utils/api-response.js";
 import { ApiError } from "../utils/api-error.js";
 import { User } from "../models/user.models.js";
-import { UserLoginLog } from "../models/userLoginLog.models.js";
 import {
   emailVerificationMailgenContent,
   forgotPasswordMailgenContent,
@@ -34,8 +34,11 @@ const registerUser = asyncHandler(async (req, res) => {
     password,
     confirmPassword,
     leetcodeUsername,
-    githubUsername,
   } = req.body;
+
+  if (!isAllowedEmail(email)) {
+    throw new ApiError(403, "Kompile is open to university email addresses only.");
+  }
 
   if (password !== confirmPassword) {
     throw new ApiError(400, "Passwords do not match");
@@ -53,9 +56,6 @@ const registerUser = asyncHandler(async (req, res) => {
       platform: "leetcode",
       username: leetcodeUsername,
     });
-  }
-  if (githubUsername) {
-    connectedPlatforms.push({ platform: "github", username: githubUsername });
   }
 
   const user = await User.create({
@@ -100,13 +100,14 @@ const login = asyncHandler(async (req, res) => {
   if (!email) {
     throw new ApiError(400, "email is required");
   }
+  // Same message for unknown email and wrong password, so the endpoint can't
+  // be used to discover which students have accounts.
   let user = await User.findOne({ email });
-  if (!user) {
-    throw new ApiError(400, "user does not exist");
-  }
-  const isPasswordcorrect = await user.isPasswordCorrect(password);
-  if (!isPasswordcorrect) {
-    throw new ApiError(400, "Invalid credentials");
+  const isPasswordcorrect = user?.password
+    ? await user.isPasswordCorrect(password)
+    : false;
+  if (!user || !isPasswordcorrect) {
+    throw new ApiError(401, "Invalid email or password");
   }
 
   if (!user.isEmailVerified) {
@@ -119,18 +120,6 @@ const login = asyncHandler(async (req, res) => {
   const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
     user._id,
   );
-
-  const today = new Date();
-  today.setUTCHours(0, 0, 0, 0);
-
-  try {
-    await UserLoginLog.create({ userId: user._id, date: today });
-  } catch (err) {
-    
-    if (err.code !== 11000) {
-      console.error("Failed to record login:", err);
-    }
-  }
 
   const loggedInUser = await User.findById(user._id).select(
     "-password -refreshToken -emailVerificationToken -emailVerificationExpiry",
@@ -384,21 +373,6 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "Password changed successfully"));
 });
 
-export const getLoginHistory = asyncHandler(async (req, res) => {
-  const logs = await UserLoginLog.find({ userId: req.user._id })
-    .sort({ date: 1 })
-    .select("date")
-    .lean();
-
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      logs.map((l) => l.date),
-      "Login history fetched",
-    ),
-  );
-});
-
 export const googleAuthCallback = asyncHandler(async (req, res) => {
   const user = req.user; 
   if (!user) throw new ApiError(401, "Google authentication failed");
@@ -406,14 +380,6 @@ export const googleAuthCallback = asyncHandler(async (req, res) => {
   const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
     user._id,
   );
-
-  const today = new Date();
-  today.setUTCHours(0, 0, 0, 0);
-  try {
-    await UserLoginLog.create({ userId: user._id, date: today });
-  } catch (err) {
-    if (err.code !== 11000) console.error("Failed to record login:", err);
-  }
 
   const options = {
     httpOnly: true,

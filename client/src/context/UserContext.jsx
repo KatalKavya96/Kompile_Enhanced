@@ -11,14 +11,14 @@ const defaultUser = {
   lastName: "",
   bio: "",
   country: "",
-  techStack: "",
+
   college: "",
   degree: "",
   branch: "",
   graduationYear: "",
   avatar: "",
   platform_data: {
-    github: { username: "" },
+
     leetcode: { username: "" },
   },
 };
