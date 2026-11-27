@@ -18,6 +18,7 @@ describe("rejectMongoOperators", () => {
     [{ body: { list: [{ deep: { $where: "1" } }] } }],
     [{ body: { "profile.role": "admin" } }],
     [{ query: { start: { $gt: "1" } } }],
+    [{ query: { "start[$gt]": "1" } }],
     [{ params: { id: { $ne: null } } }],
   ])("rejects %j", (req) => {
     expect(run(req)?.statusCode).toBe(400);

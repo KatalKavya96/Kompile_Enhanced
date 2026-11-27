@@ -2,13 +2,16 @@ import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 import { ApiError } from "../utils/api-error.js";
 
 // Blocks NoSQL operator injection such as {"email": {"$gt": ""}}: any key that
-// starts with "$" or contains "." anywhere in body, query or params is rejected.
+// contains "$" or "." anywhere in body, query or params is rejected. "Contains",
+// not "starts with": Express 5's simple query parser keeps "start[$gt]=1" as one
+// literal key, and a later switch to the extended parser would turn it into an
+// operator.
 const hasOperatorKey = (value, depth = 0) => {
   if (depth > 20) return true;
   if (Array.isArray(value)) return value.some((v) => hasOperatorKey(v, depth + 1));
   if (value && typeof value === "object") {
     return Object.entries(value).some(
-      ([key, v]) => key.startsWith("$") || key.includes(".") || hasOperatorKey(v, depth + 1),
+      ([key, v]) => key.includes("$") || key.includes(".") || hasOperatorKey(v, depth + 1),
     );
   }
   return false;
